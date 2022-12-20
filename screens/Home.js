@@ -1,16 +1,14 @@
 import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
-import { View, TouchableOpacity, Text, Image, StyleSheet, ImageBackground, Modal, Pressable, ActivityIndicator } from "react-native";
+import { View, TouchableOpacity, Text, StyleSheet, ImageBackground, Modal, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import colors from '../colors';
 import { Entypo, AntDesign } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
 import { auth, database } from '../config/firebase';
 import TinderCard from 'react-tinder-card';
-const backImage = require("../assets/backImage.png");
 import { AuthenticatedUserContext } from '../Context';  
 import {
     collection,
-    addDoc,
     orderBy,
     query,
     onSnapshot,
@@ -21,25 +19,25 @@ import {
     updateDoc,
     getDoc
 } from 'firebase/firestore';
+const backImage = require("../assets/backImage.png");
 
 const Home = () => {
     const { user, setUser, prevScreen, setPrevScreen } = useContext(AuthenticatedUserContext);
 
-    const [visible, setVisible] = useState(false);
     const [modalText, setModalText] = useState("");
+    const [profiles, setProfiles] = useState([]);
+    const [visible, setVisible] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const navigation = useNavigation();
     const isFocused = useIsFocused();
 
-    const [profiles, setProfiles] = useState([]);
-
     useEffect(() => {
         if(isFocused) {
             updateNotifications();
-            getProfiles();
-            setPrevScreen("Home");
         }
+        
+        setPrevScreen("Home");
     }, [isFocused])
 
     useLayoutEffect(() => {

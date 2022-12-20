@@ -1,29 +1,24 @@
 import React, {
     useState,
-    useEffect,
     useLayoutEffect,
     useCallback,
     useContext
-  } from 'react';
-  import { View, FlatList, Text, StyleSheet } from 'react-native';
-  import { GiftedChat } from 'react-native-gifted-chat';
-  import {
-    collection,
-    addDoc,
-    orderBy,
-    query,
-    onSnapshot,
-    doc,
-    where,
-    updateDoc,
-    getDoc 
-  } from 'firebase/firestore';
-  import { signOut } from 'firebase/auth';
-  import { auth, database } from '../config/firebase';
-  import { useNavigation } from '@react-navigation/native';
-  import { AntDesign } from '@expo/vector-icons';
-  import colors from '../colors';
-  import { AuthenticatedUserContext } from '../Context'
+} from 'react';
+import { GiftedChat } from 'react-native-gifted-chat';
+import {
+  collection,
+  addDoc,
+  orderBy,
+  query,
+  onSnapshot,
+  doc,
+  where,
+  updateDoc,
+  getDoc
+} from 'firebase/firestore';
+import { auth, database } from '../config/firebase';
+import { useNavigation } from '@react-navigation/native';
+import { AuthenticatedUserContext } from '../Context'
 
 
 export default function Chat({ route }) {

@@ -1,36 +1,23 @@
 import React, {
-    useState,
-    useEffect,
     useLayoutEffect,
-    useCallback,
     useContext
-  } from 'react';
-  import { View, FlatList, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-  import { GiftedChat } from 'react-native-gifted-chat';
-  import {
+} from 'react';
+import { View, FlatList, Text, StyleSheet, Image } from 'react-native';
+import {
     collection,
-    addDoc,
-    orderBy,
     query,
     onSnapshot,
-    getDocs,
     where 
-  } from 'firebase/firestore';
-  import { signOut } from 'firebase/auth';
-  import { auth, database } from '../config/firebase';
-  import { useNavigation } from '@react-navigation/native';
-  import { AntDesign } from '@expo/vector-icons';
-  import colors from '../colors'; 
-  import { AuthenticatedUserContext } from '../Context'
+} from 'firebase/firestore';
+import { database } from '../config/firebase';
+import { useNavigation } from '@react-navigation/native';
+import { AuthenticatedUserContext } from '../Context'
 
 
 export default function Notifications() {
     const { user, setUser, setPrevScreen } = useContext(AuthenticatedUserContext);
+    
     const navigation = useNavigation();
-
-    useEffect(() => {
-        setPrevScreen("Notifications");
-    }, [])
 
     useLayoutEffect(() => {
         const collectionRef = collection(database, 'users');
@@ -45,6 +32,8 @@ export default function Notifications() {
                 }
             );
         });
+
+        setPrevScreen("Notifications");
         
         return () => unsubscribe();
     }, []);

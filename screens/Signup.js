@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Button, TextInput, Image, SafeAreaView, TouchableOpacity, StatusBar, Alert } from "react-native";
+import { StyleSheet, Text, View, TextInput, Image, SafeAreaView, TouchableOpacity, StatusBar, Alert } from "react-native";
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, database } from '../config/firebase';
 import {
     collection,
     addDoc,
-    FieldValue
   } from 'firebase/firestore';
 const backImage = require("../assets/backImage.png");
 
