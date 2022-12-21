@@ -1,8 +1,8 @@
 import React, {
     useLayoutEffect,
-    useContext
+    useContext,
 } from 'react';
-import { View, FlatList, Text, StyleSheet, Image } from 'react-native';
+import { View, FlatList, Text, StyleSheet, } from 'react-native';
 import {
     collection,
     query,
@@ -10,16 +10,16 @@ import {
     where 
 } from 'firebase/firestore';
 import { database } from '../config/firebase';
-import { useNavigation } from '@react-navigation/native';
-import { AuthenticatedUserContext } from '../Context'
+import { AuthenticatedUserContext } from '../Context';
+import colors from '../colors';
 
 
 export default function Notifications() {
     const { user, setUser, setPrevScreen } = useContext(AuthenticatedUserContext);
-    
-    const navigation = useNavigation();
 
     useLayoutEffect(() => {
+        setPrevScreen('Notifications');
+
         const collectionRef = collection(database, 'users');
         const q = query(collectionRef, where('email', '==', user.email));
 
@@ -32,8 +32,6 @@ export default function Notifications() {
                 }
             );
         });
-
-        setPrevScreen("Notifications");
         
         return () => unsubscribe();
     }, []);
@@ -44,16 +42,19 @@ export default function Notifications() {
                 data={user.notifications}
                 renderItem={
                     ({item, index}) => (
-                        <View style={styles.item}>
-                            <Image
-                                style={styles.tinyLogo}
-                                source={{
-                                    uri: 'https://i.pravatar.cc/300',
-                                }}
-                            />
-                            <Text style={styles.name}>
-                                {item} {index >= user.notifications_length ? "" : " + NEW MATCH"}
-                            </Text>
+                        <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+                            <View style={styles.item}>
+                                <Text style={styles.name}>
+                                    {item} 
+                                </Text>
+                            </View>
+                            {
+                                index >= user.notifications_length 
+                                ? 
+                                <></> 
+                                : 
+                                <View style={{height: 15, width: 15, borderRadius: 50, backgroundColor: colors.primary, marginRight: 20}}></View>
+                            }
                         </View>
                     )
                 }

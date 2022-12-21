@@ -11,7 +11,8 @@ import {
 } from 'firebase/firestore';
 import { database } from '../config/firebase';
 import { useNavigation } from '@react-navigation/native';
-import { AuthenticatedUserContext } from '../Context'
+import { AuthenticatedUserContext } from '../Context';
+import colors from '../colors';
 
 
 export default function ChatList() {
@@ -42,17 +43,25 @@ export default function ChatList() {
                 data={user.matches}
                 renderItem={
                     ({item}) => (
-                        <TouchableOpacity onPress={() => navigation.navigate("Chat", {other: item})} style={styles.item}>
-                            <Image
-                                style={styles.tinyLogo}
-                                source={{
-                                    uri: 'https://i.pravatar.cc/300',
-                                }}
-                            />
-                            <Text style={styles.name}>
-                                {item.email} {item.lastToSend === "" || item.lastToSend === user.email ? "" : " + NEW MESSAGE"}
-                            </Text>
-                        </TouchableOpacity>
+                        <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+                            <TouchableOpacity onPress={() => navigation.navigate("Chat", {other: item})} style={styles.item}>
+                                <Image
+                                    style={styles.tinyLogo}
+                                    source={{
+                                        uri: 'https://i.pravatar.cc/300',
+                                    }}
+                                />
+                                <Text style={styles.name}>
+                                    {item.email} 
+                                </Text>
+                            </TouchableOpacity>
+                            {
+                                item.lastToSend === "" || item.lastToSend === user.email 
+                                ? <></> 
+                                : 
+                                <View style={{height: 15, width: 15, borderRadius: 50, backgroundColor: colors.primary, marginRight: 20}}></View>
+                            }
+                        </View>
                     )
                 }
             />

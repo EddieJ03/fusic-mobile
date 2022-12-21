@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
+import React, { useEffect, useLayoutEffect, useState, useContext, useCallback } from "react";
 import { View, TouchableOpacity, Text, StyleSheet, ImageBackground, Modal, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import colors from '../colors';
@@ -26,6 +26,7 @@ const Home = () => {
 
     const [modalText, setModalText] = useState("");
     const [profiles, setProfiles] = useState([]);
+    const [length, setLength] = useState(0);
     const [visible, setVisible] = useState(false);
     const [loading, setLoading] = useState(false);
 
@@ -36,11 +37,11 @@ const Home = () => {
         if(isFocused) {
             updateNotifications();
         }
-        
-        setPrevScreen("Home");
     }, [isFocused])
 
     useLayoutEffect(() => {
+        getProfiles();
+
         console.log("entered home");
 
         const collectionRef = collection(database, 'users');
@@ -60,9 +61,15 @@ const Home = () => {
     }, []);
 
     const swiped = async (direction, profile) => {
+      setLength(length - 1);
+
       if(direction === 'right') {
         const profileRef = doc(database, 'users', profile.id);
         const profileSnap = await getDoc(profileRef);
+
+        if(!profileSnap.exists) {
+            return;
+        }
 
         if(profileSnap.data().swiped_right.includes(user.email)) {
             setModalText("You matched with " + profile.email + "!");
@@ -79,7 +86,7 @@ const Home = () => {
             await updateDoc(otherToUpdate, {
                  matches: [{email: user.email, lastToSend: "", id: user.id}, ...profileSnap.data().matches],
                  swiped_right: profile.swiped_right.filter(email => email !== user.email),
-                 notifications: [`You matched with ${user.email}`, ...profile.notifications],
+                 notifications: [`New Friend: ${user.email}!`, ...profile.notifications],
                  notifications_length: profile.notifications_length + 1
             })
         } else {
@@ -128,6 +135,7 @@ const Home = () => {
     }, [navigation, user]);
 
     const getProfiles = async () => {
+        console.log("running get profiles");
         setLoading(true);
         const collectionRef = collection(database, 'users'); 
 
@@ -146,7 +154,7 @@ const Home = () => {
             alreadySwiped.add(user.swiped_right[i]);
         }
 
-        setProfiles(profilesQuerySnapshot.docs.filter((profile) => !alreadySwiped.has(profile.data().email)).map((profile) => {
+        const filteredProfiles = profilesQuerySnapshot.docs.filter((profile) => !alreadySwiped.has(profile.data().email)).map((profile) => {
             const { email, swiped_right, notifications, notifications_length } = profile.data();
 
             return {
@@ -156,12 +164,17 @@ const Home = () => {
                 notifications,
                 notifications_length
             };
-        }));
+        });
+
+        setProfiles(filteredProfiles);
+        setLength(filteredProfiles.length);
 
         setLoading(false);
     }
 
     const updateNotifications = async () => {
+        console.log(prevScreen + " in home");
+
         // first get rid of notifications if came from notifications
         if(prevScreen === "Notifications" && user.notifications_length > 0) {
             const dataToUpdate = doc(database, 'users', user.id);
@@ -169,6 +182,8 @@ const Home = () => {
                 notifications_length: 0,
             });
         }
+        
+        setPrevScreen("Home");
     }
 
     return (
@@ -185,8 +200,9 @@ const Home = () => {
                     <Text style={styles.modalText}>{modalText}</Text>
                     <Pressable
                         onPress={() => setVisible(!visible)}
+                        style={{backgroundColor: colors.gray, height: 30, width: 60, display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: 10}}
                     >
-                        <Text>Ok</Text>
+                        <Text style={{color: 'white'}}>OK</Text>
                     </Pressable>
                 </View>
             </Modal>
@@ -199,7 +215,7 @@ const Home = () => {
                     </View>
                     :
                     (
-                        profiles.length > 0 ?
+                        length > 0 ?
                         profiles.map(profile => 
                             <TinderCard key={profile.email} onSwipe={(dir) => swiped(dir, profile)} preventSwipe={['down', 'up']}>
                                 <View style={styles.card}>
@@ -216,7 +232,7 @@ const Home = () => {
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                                 <Pressable
                                     onPress={getProfiles}
-                                    style={{backgroundColor: 'blue', height: 50, width: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: 15}}
+                                    style={{backgroundColor: '#606060', height: 50, width: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: 15}}
                                 >
                                     <Text style={{color: 'white', textAlign: 'center'}}>Get More Profiles</Text>
                                 </Pressable>
