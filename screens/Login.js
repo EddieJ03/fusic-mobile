@@ -37,40 +37,40 @@ export default function Login({ navigation }) {
 
   const getSpotifyProfileData = async (access_token) => {
     try {
-      onHandleLogin();
-      // const profile = await axios.get('https://api.spotify.com/v1/me', {
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${access_token}`,
-      //   },
-      // });
+      const profile = await axios.get('https://api.spotify.com/v1/me', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${access_token}`,
+        },
+      });
 
-      // const topArtists = await axios.get('https://api.spotify.com/v1/me/top/artists?offset=0&limit=3', {
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${access_token}`,
-      //   }
-      // });
+      const topArtists = await axios.get('https://api.spotify.com/v1/me/top/artists?offset=0&limit=3', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${access_token}`,
+        }
+      });
 
-      // const topSongs = await axios.get('https://api.spotify.com/v1/me/top/tracks?offset=0&limit=3', {
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${access_token}`,
-      //   }
-      // });
+      const topSongs = await axios.get('https://api.spotify.com/v1/me/top/tracks?offset=0&limit=3', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${access_token}`,
+        }
+      });
 
-      // const { email } = profile.data;
+      const { email } = profile.data;
 
-      signInWithEmailAndPassword(auth, "ecjin@ucsd.edu", "edward")
+      signInWithEmailAndPassword(auth, email, email)
         .then((cred) => {
           const { uid } = cred.user;
           
-          // updateProfile(uid);
+          updateProfile(uid);
 
           console.log("Login success");
         })
         .catch((err) => {
           console.log("USER DOES NOT EXIST YET");
+
           if(err.message === 'Firebase: Error (auth/user-not-found).') {
             onHandleSignup(email, email, profile.data, topArtists.data.items, topSongs.data.items);
           } else {
@@ -100,25 +100,25 @@ export default function Login({ navigation }) {
 
 const updateProfile = async (uid) => {
   console.log(uid);
-    const userQuery = query(collection(database, 'users'), where('_id', '==', uid));
-    const userQuerySnapshot = await getDocs(userQuery);
-    const profileRef = doc(database, 'users', userQuerySnapshot.docs[0].id);
+  const userQuery = query(collection(database, 'users'), where('_id', '==', uid));
+  const userQuerySnapshot = await getDocs(userQuery);
+  const profileRef = doc(database, 'users', userQuerySnapshot.docs[0].id);
 
-    updateDoc(profileRef, {
-          picture: profile.images[0].url === undefined ? "" : profile.images[0].url,
-          top_artists: topArtists.map((artist) => {
-            return {
-              name: artist.name,
-              picture: artist.images[0].url
-            }
-          }),
-          top_songs: topSongs.map((song) => {
-            return {
-              name: song.name,
-              picture: song.images[0].url
-            }
-          }),
-    });
+  updateDoc(profileRef, {
+    picture: profile.images[0].url === undefined ? "" : profile.images[0].url,
+    top_artists: topArtists.map((artist) => {
+      return {
+        name: artist.name,
+        picture: artist.images[0].url
+      }
+    }),
+    top_songs: topSongs.map((song) => {
+      return {
+        name: song.name,
+        picture: song.images[0].url
+      }
+    }),
+  });
 }
 
 const onHandleSignup = (email, password, profile, topArtists, topSongs) => {
@@ -162,7 +162,7 @@ const onHandleSignup = (email, password, profile, topArtists, topSongs) => {
       <View style={styles.whiteSheet} />
       <SafeAreaView style={styles.form}>
         <Text style={styles.title}>FUSIC</Text>
-        <TouchableOpacity style={styles.button} onPress={getSpotifyProfileData}>
+        <TouchableOpacity style={styles.button} onPress={onHandleLogin}>
             <Text style={{fontWeight: 'bold', color: '#fff', fontSize: 18}}>Log In With Spotify</Text>
         </TouchableOpacity>
       </SafeAreaView>

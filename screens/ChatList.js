@@ -13,6 +13,7 @@ import { database } from '../config/firebase';
 import { useNavigation } from '@react-navigation/native';
 import { AuthenticatedUserContext } from '../Context';
 import colors from '../colors';
+import { Ionicons } from '@expo/vector-icons';
 
 
 export default function ChatList() {
@@ -45,12 +46,20 @@ export default function ChatList() {
                     ({item}) => (
                         <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
                             <TouchableOpacity onPress={() => navigation.navigate("Chat", {other: item})} style={styles.item}>
-                                <Image
-                                    style={styles.tinyLogo}
-                                    source={{
-                                        uri: 'https://i.pravatar.cc/300',
-                                    }}
-                                />
+                                {
+                                    item.picture === "" 
+                                    ?
+                                    <View style={styles.noProfilePic} >
+                                        <Ionicons size={20} name="person" color="white" />
+                                    </View>
+                                    :
+                                    <Image
+                                        style={styles.tinyLogo}
+                                        source={{
+                                            uri: item.picture,
+                                        }}
+                                    />
+                                }
                                 <Text style={styles.name}>
                                     {item.email} 
                                 </Text>
@@ -87,5 +96,14 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         padding: 10,
+    },
+    noProfilePic: {
+        backgroundColor: 'black', 
+        height: 40, 
+        width: 40, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        borderRadius: 50,
     }
 });

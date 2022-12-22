@@ -79,12 +79,12 @@ const Home = () => {
             const otherToUpdate = doc(database, 'users', profile.id);
 
             await updateDoc(userToUpdate, {
-                matches: [{email: profile.email, lastToSend: "", id: profile.id}, ...user.matches]
+                matches: [{email: profile.email, lastToSend: "", id: profile.id, picture: profile.picture}, ...user.matches]
             })
 
             // filter out swiped_right in other user
             await updateDoc(otherToUpdate, {
-                 matches: [{email: user.email, lastToSend: "", id: user.id}, ...profileSnap.data().matches],
+                 matches: [{email: user.email, lastToSend: "", id: user.id, picture: user.picture}, ...profileSnap.data().matches],
                  swiped_right: profile.swiped_right.filter(email => email !== user.email),
                  notifications: [`New Friend: ${user.email}!`, ...profile.notifications],
                  notifications_length: profile.notifications_length + 1
@@ -230,7 +230,7 @@ const Home = () => {
                                                 <Ionicons name="person" size={75} color="white" />
                                             </View>
                                             :
-                                            <Image style={styles.picture} source={{uri: profile.picture}}/>
+                                            <Image style={styles.noProfilePic} source={{uri: profile.picture}}/>
                                         }
                                         <Text style={{fontSize: 25, fontWeight: 'bold'}}>
                                             {profile.email}
@@ -240,13 +240,16 @@ const Home = () => {
                                         </Text>
                                         <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
                                             {
-                                                profile.top_artists.map(
+                                                profile.top_artists.length > 0 ? profile.top_artists.map(
                                                     artist => 
                                                     <View style={styles.artists}>
                                                         <Image style={styles.picture} source={{uri: artist.picture}}/>
                                                         <Text>{artist.name}</Text>
                                                     </View>
-                                                )
+                                                ) : 
+                                                <View style={styles.artists}>
+                                                    <Text>No top artists . . .</Text>
+                                                </View>
                                             }
                                         </View>
                                         <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
@@ -254,13 +257,16 @@ const Home = () => {
                                         </Text>
                                         <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
                                             {
-                                                profile.top_songs.map(
+                                                profile.top_songs.length > 0 ? profile.top_songs.map(
                                                     song => 
                                                     <View style={styles.artists}>
                                                         <Image style={styles.picture} source={{uri: song.picture}}/>
                                                         <Text>{song.name}</Text>
                                                     </View>
-                                                )
+                                                ) : 
+                                                <View style={styles.artists}>
+                                                    <Text>No top songs . . .</Text>
+                                                </View>                                                
                                             }
                                         </View>
                                     </View>
@@ -365,7 +371,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
     },
     cardContents: {
-        backgroundColor: 'orange', 
+        backgroundColor: colors.primary, 
         height: '90%', 
         position: "absolute", 
         bottom: 0,

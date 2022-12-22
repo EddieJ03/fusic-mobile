@@ -103,7 +103,7 @@ export default function Chat({ route }) {
           }}
           user={{
             _id: auth?.currentUser?.email,
-            avatar: 'https://i.pravatar.cc/300'
+            avatar: user.picture === "" ? 'https://i.stack.imgur.com/34AD2.jpg' : user.picture
           }}
         />
     );
