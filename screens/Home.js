@@ -1,8 +1,8 @@
 import React, { useEffect, useLayoutEffect, useState, useContext, useCallback } from "react";
-import { View, TouchableOpacity, Text, StyleSheet, ImageBackground, Modal, Pressable, ActivityIndicator } from "react-native";
+import { View, TouchableOpacity, Text, StyleSheet, Image, Modal, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import colors from '../colors';
-import { Entypo, AntDesign } from '@expo/vector-icons';
+import { Entypo, AntDesign, Ionicons } from '@expo/vector-icons';
 import { signOut } from 'firebase/auth';
 import { auth, database } from '../config/firebase';
 import TinderCard from 'react-tinder-card';
@@ -19,7 +19,7 @@ import {
     updateDoc,
     getDoc
 } from 'firebase/firestore';
-const backImage = require("../assets/backImage.png");
+const spotify = require("../assets/Spotify_Logo_RGB_Green.png");
 
 const Home = () => {
     const { user, setUser, prevScreen, setPrevScreen } = useContext(AuthenticatedUserContext);
@@ -155,14 +155,17 @@ const Home = () => {
         }
 
         const filteredProfiles = profilesQuerySnapshot.docs.filter((profile) => !alreadySwiped.has(profile.data().email)).map((profile) => {
-            const { email, swiped_right, notifications, notifications_length } = profile.data();
+            const { email, swiped_right, notifications, notifications_length, picture, top_artists, top_songs } = profile.data();
 
             return {
                 id: profile.id,
                 email,
                 swiped_right,
                 notifications,
-                notifications_length
+                notifications_length,
+                picture,
+                top_artists,
+                top_songs
             };
         });
 
@@ -219,11 +222,48 @@ const Home = () => {
                         profiles.map(profile => 
                             <TinderCard key={profile.email} onSwipe={(dir) => swiped(dir, profile)} preventSwipe={['down', 'up']}>
                                 <View style={styles.card}>
-                                    <ImageBackground style={styles.cardImage} source={backImage}>
-                                        <Text style={styles.cardTitle}>
+                                    <Image style={{width: 100, height: 30}} source={spotify}></Image>
+                                    <View style={styles.cardContents}>
+                                        {
+                                            profile.picture === "" ?
+                                            <View style={styles.noProfilePic} >
+                                                <Ionicons name="person" size={75} color="white" />
+                                            </View>
+                                            :
+                                            <Image style={styles.picture} source={{uri: profile.picture}}/>
+                                        }
+                                        <Text style={{fontSize: 25, fontWeight: 'bold'}}>
                                             {profile.email}
                                         </Text>
-                                    </ImageBackground>
+                                        <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
+                                            TOP ARTISTS
+                                        </Text>
+                                        <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                                            {
+                                                profile.top_artists.map(
+                                                    artist => 
+                                                    <View style={styles.artists}>
+                                                        <Image style={styles.picture} source={{uri: artist.picture}}/>
+                                                        <Text>{artist.name}</Text>
+                                                    </View>
+                                                )
+                                            }
+                                        </View>
+                                        <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
+                                            TOP SONGS
+                                        </Text>
+                                        <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                                            {
+                                                profile.top_songs.map(
+                                                    song => 
+                                                    <View style={styles.artists}>
+                                                        <Image style={styles.picture} source={{uri: song.picture}}/>
+                                                        <Text>{song.name}</Text>
+                                                    </View>
+                                                )
+                                            }
+                                        </View>
+                                    </View>
                                 </View>
                             </TinderCard>
                         )
@@ -276,14 +316,14 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         maxWidth: 350,
-        maxHeight: 650,
+        maxHeight: 600,
     },
     card: {
         position: 'absolute',
         backgroundColor: '#fff',
         width: '100%',
         maxWidth: 350,
-        height: 650,
+        height: 600,
         shadowColor: 'black',
         shadowOpacity: 0.2,
         shadowRadius: 20,
@@ -298,8 +338,7 @@ const styles = StyleSheet.create({
     },
     cardTitle: {
         position: 'absolute',
-        bottom: 0,
-        margin: 10,
+        top: 10,
         color: 'black',
     },
     modalView: {
@@ -324,5 +363,41 @@ const styles = StyleSheet.create({
     rightIcons: {
         display: 'flex',
         flexDirection: 'row',
+    },
+    cardContents: {
+        backgroundColor: 'orange', 
+        height: '90%', 
+        position: "absolute", 
+        bottom: 0,
+        width: '100%',
+        borderRadius: 20,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    artists: {
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        flex: 1
+    },
+    picture: {
+        width: 100, 
+        height: 100,
+        objectFit: 'cover',
+        borderRadius: 50
+    },
+    noProfilePic: {
+        backgroundColor: 'black', 
+        height: 100, 
+        width: 100, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        borderRadius: 50,
+        position: 'absolute',
+        top: -40
     }
 });

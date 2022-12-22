@@ -1,57 +1,170 @@
-import React, { useState } from "react";
-import { StyleSheet, Text, View, TextInput, Image, SafeAreaView, TouchableOpacity, StatusBar, Alert } from "react-native";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../config/firebase";
-const backImage = require("../assets/backImage.png");
+import React, { useEffect, useContext } from "react";
+import { StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity, StatusBar, Alert } from "react-native";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth, database } from "../config/firebase";
+const backImage = require("../assets/backgroundImage.png");
+import { makeRedirectUri, useAuthRequest, ResponseType } from 'expo-auth-session';
+import { AuthenticatedUserContext } from '../Context'; 
+import axios from 'axios'; 
+import {
+  collection,
+  updateDoc,
+  addDoc,
+  doc,
+} from 'firebase/firestore';
+
+const discovery = {
+  authorizationEndpoint: 'https://accounts.spotify.com/authorize',
+  tokenEndpoint: 'https://accounts.spotify.com/api/token',
+};
 
 export default function Login({ navigation }) {
+  const { spotifyCode, setSpotifyCode } = useContext(AuthenticatedUserContext);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [request, response, promptAsync] = useAuthRequest(
+    {
+      clientId: '843196be31644a08aa430173df7ca822',
+      responseType: ResponseType.Token,
+      clientSecret: '56b4929f5cf34d829e812f77b9e39fcd',
+      scopes: ['user-read-email', 'user-top-read'],
+      usePKCE: false,
+      redirectUri: makeRedirectUri({
+        scheme: 'exp://10.0.0.5:19000'
+      }),
+    },
+    discovery
+  );
+
+  const getSpotifyProfileData = async (access_token) => {
+    try {
+      onHandleLogin();
+      // const profile = await axios.get('https://api.spotify.com/v1/me', {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${access_token}`,
+      //   },
+      // });
+
+      // const topArtists = await axios.get('https://api.spotify.com/v1/me/top/artists?offset=0&limit=3', {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${access_token}`,
+      //   }
+      // });
+
+      // const topSongs = await axios.get('https://api.spotify.com/v1/me/top/tracks?offset=0&limit=3', {
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //     'Authorization': `Bearer ${access_token}`,
+      //   }
+      // });
+
+      // const { email } = profile.data;
+
+      signInWithEmailAndPassword(auth, "ecjin@ucsd.edu", "edward")
+        .then((cred) => {
+          const { uid } = cred.user;
+          
+          // updateProfile(uid);
+
+          console.log("Login success");
+        })
+        .catch((err) => {
+          console.log("USER DOES NOT EXIST YET");
+          if(err.message === 'Firebase: Error (auth/user-not-found).') {
+            onHandleSignup(email, email, profile.data, topArtists.data.items, topSongs.data.items);
+          } else {
+            Alert.alert("Login error", err.message);
+          }
+        });
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  useEffect(() => {
+    if (response?.type === 'success') {
+      const { access_token } = response.params;
+
+      console.log(access_token);
+
+      getSpotifyProfileData(access_token);
+
+      setSpotifyCode(access_token);
+    }
+  }, [response]);
 
   const onHandleLogin = () => {
-    if (email !== "" && password !== "") {
-      signInWithEmailAndPassword(auth, email, password)
-        .then(() => console.log("Login success"))
-        .catch((err) => Alert.alert("Login error", err.message));
-    }
+    promptAsync();
   };
+
+const updateProfile = async (uid) => {
+  console.log(uid);
+    const userQuery = query(collection(database, 'users'), where('_id', '==', uid));
+    const userQuerySnapshot = await getDocs(userQuery);
+    const profileRef = doc(database, 'users', userQuerySnapshot.docs[0].id);
+
+    updateDoc(profileRef, {
+          picture: profile.images[0].url === undefined ? "" : profile.images[0].url,
+          top_artists: topArtists.map((artist) => {
+            return {
+              name: artist.name,
+              picture: artist.images[0].url
+            }
+          }),
+          top_songs: topSongs.map((song) => {
+            return {
+              name: song.name,
+              picture: song.images[0].url
+            }
+          }),
+    });
+}
+
+const onHandleSignup = (email, password, profile, topArtists, topSongs) => {
+  if (email !== '' && password !== '') {
+      createUserWithEmailAndPassword(auth, email, password)
+        .then((cred) => {
+            const { uid, email } = cred.user;    
+
+            addDoc(collection(database, 'users'), {
+              _id: uid,
+              email: email,
+              matches: [], // contains emails
+              swiped_right: [], // contains emails
+              createdAt: (new Date()).getTime(),
+              notifications: [],
+              notifications_length: 0,
+              picture: profile.images.length === 0 ? "" : profile.images[0].url,
+              top_artists: topArtists.map((artist) => {
+                return {
+                  name: artist.name,
+                  picture: artist.images[0].url
+                }
+              }),
+              top_songs: topSongs.map((song) => {
+                return {
+                  name: song.name,
+                  picture: song.album.images[0].url
+                }
+              }),
+            });
+
+            console.log('Signup success')
+        })
+        .catch((err) => Alert.alert("Login error", err.message));
+  }
+};
   
   return (
     <View style={styles.container}>
       <Image source={backImage} style={styles.backImage} />
       <View style={styles.whiteSheet} />
       <SafeAreaView style={styles.form}>
-        <Text style={styles.title}>Log In</Text>
-         <TextInput
-            style={styles.input}
-            placeholder="Enter email"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            textContentType="emailAddress"
-            autoFocus={true}
-            value={email}
-            onChangeText={(text) => setEmail(text)}
-        />
-        <TextInput
-            style={styles.input}
-            placeholder="Enter password"
-            autoCapitalize="none"
-            autoCorrect={false}
-            secureTextEntry={true}
-            textContentType="password"
-            value={password}
-            onChangeText={(text) => setPassword(text)}
-        />
-        <TouchableOpacity style={styles.button} onPress={onHandleLogin}>
-            <Text style={{fontWeight: 'bold', color: '#fff', fontSize: 18}}> Log In</Text>
+        <Text style={styles.title}>FUSIC</Text>
+        <TouchableOpacity style={styles.button} onPress={getSpotifyProfileData}>
+            <Text style={{fontWeight: 'bold', color: '#fff', fontSize: 18}}>Log In With Spotify</Text>
         </TouchableOpacity>
-        <View style={{marginTop: 20, flexDirection: 'row', alignItems: 'center', alignSelf: 'center'}}>
-            <Text style={{color: 'gray', fontWeight: '600', fontSize: 14}}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-            <Text style={{color: '#f57c00', fontWeight: '600', fontSize: 14}}> Sign Up</Text>
-            </TouchableOpacity>
-        </View>
       </SafeAreaView>
       <StatusBar barStyle="light-content" />
     </View>
@@ -63,7 +176,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   title: {
-    fontSize: 36,
+    fontSize: 40,
     fontWeight: 'bold',
     color: "orange",
     alignSelf: "center",

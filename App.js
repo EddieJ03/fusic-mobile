@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { AuthenticatedUserContext } from './Context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -13,15 +13,9 @@ import Home from './screens/Home';
 import Notifications from './screens/Notifications';
 import {
   collection,
-  addDoc,
-  orderBy,
   query,
-  onSnapshot,
   getDocs,
   where,
-  limit,
-  doc,
-  updateDoc,
 } from 'firebase/firestore';
 
 const Stack = createStackNavigator();
@@ -30,9 +24,10 @@ const AuthenticatedUserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [authUser, setAuthUser] = useState(null);
   const [prevScreen, setPrevScreen] = useState("");
+  const [spotifyCode, setSpotifyCode] = useState("");
 
   return (
-    <AuthenticatedUserContext.Provider value={{ user, setUser, authUser, setAuthUser, prevScreen, setPrevScreen }}>
+    <AuthenticatedUserContext.Provider value={{ user, setUser, authUser, setAuthUser, prevScreen, setPrevScreen, spotifyCode, setSpotifyCode }}>
       {children}
     </AuthenticatedUserContext.Provider>
   );
