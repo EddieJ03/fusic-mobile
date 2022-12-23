@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
-import { View, TouchableOpacity, Text, StyleSheet, Image, Modal, Pressable, ActivityIndicator } from "react-native";
+import { View, TouchableOpacity, Text, StyleSheet, Image, Modal, ActivityIndicator, Linking } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import colors from '../colors';
 import { Entypo, AntDesign, Ionicons } from '@expo/vector-icons';
@@ -17,7 +17,7 @@ import {
     limit,
     doc,
     updateDoc,
-    getDoc
+    getDoc,
 } from 'firebase/firestore';
 const spotify = require("../assets/Spotify_Logo_RGB_Green.png");
 
@@ -29,6 +29,9 @@ const Home = () => {
     const [length, setLength] = useState(0);
     const [visible, setVisible] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    // 0 is match, 1 is delete, 2 is links
+    const [modalState, setModalState] = useState(0);
 
     const navigation = useNavigation();
     const isFocused = useIsFocused();
@@ -75,14 +78,23 @@ const Home = () => {
           headerRight: () => (
             <View style={styles.rightIcons}>
                 <TouchableOpacity
+                    onPress={() => {
+                        setModalText('Delete Account?');
+                        setVisible(true);
+                        setModalState(1);
+                    }}
+                >
+                    <Entypo name="trash" size={24} color={colors.gray} style={{marginRight: 10}} />
+                </TouchableOpacity>
+                <TouchableOpacity
                     onPress={() => navigation.navigate("Notifications")}
                 >
-                    <Entypo name="bell" size={24} color={user.notifications_length > 0 ? colors.primary : colors.gray} style={{marginRight: 10}}/>
+                    <Entypo name="bell" size={24} color={user.notifications_length > 0 ? colors.primary : colors.gray} style={{marginRight: 10}} />
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => navigation.navigate("ChatList")}
                 >
-                    <Entypo name="chat" size={24} color={user.matches.find(element => element.lastToSend !== "" && element.lastToSend !== user.email) !== undefined ? colors.primary : colors.gray} style={{marginRight: 10}}/>
+                    <Entypo name="chat" size={24} color={user.matches.find(element => element.lastToSend !== "" && element.lastToSend !== user.email) !== undefined ? colors.primary : colors.gray} style={{marginRight: 10}} />
                 </TouchableOpacity>
             </View>
           )
@@ -101,6 +113,7 @@ const Home = () => {
         }
 
         if(profileSnap.data().swiped_right.includes(user.email)) {
+            setModalState(0);
             setModalText("You matched with " + profile.email + "!");
             setVisible(true);
             console.log('hit match');
@@ -188,6 +201,20 @@ const Home = () => {
         setPrevScreen("Home");
     }
 
+    const deleteAccount = async () => {
+
+    }
+
+    const displayLinks = () => {
+        setVisible(true);
+        setModalState(2);
+        setModalText("Links");
+    }
+
+    const openLink = async (url) => {
+        await Linking.openURL(url);
+    }
+
     return (
         <View style={styles.container}>
             <Modal
@@ -200,12 +227,88 @@ const Home = () => {
             >
                 <View style={styles.modalView}>
                     <Text style={styles.modalText}>{modalText}</Text>
-                    <Pressable
-                        onPress={() => setVisible(!visible)}
-                        style={styles.modalButton}
-                    >
-                        <Text style={{color: 'white'}}>OK</Text>
-                    </Pressable>
+                    {
+                        modalState === 2 
+                        ?
+                        <>
+                        <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
+                            TOP ARTISTS
+                        </Text>
+                        <View style={{display: 'flex', flexDirection: 'row'}}>
+                            {
+                                profiles[length-1].top_artists.length > 0 ? profiles[length-1].top_artists.map(
+                                    artist => 
+                                    <View key={artist.name} style={styles.artists}>
+                                        <Image style={styles.picture} source={{uri: artist.picture}}/>
+                                        <TouchableOpacity onPress={() => openLink(artist.spotify)} style={{width: 90, height: 20, backgroundColor: colors.primary, borderRadius: 15, marginTop: 5}}>
+                                            <Text style={{alignSelf: 'center', color: 'white'}}>
+                                                {artist.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : 
+                                <View style={styles.artists}>
+                                    <Text>No top artists . . .</Text>
+                                </View>
+                            }
+                        </View>
+                        <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
+                            TOP SONGS
+                        </Text>
+                        <View style={{display: 'flex', flexDirection: 'row', width: '100%', marginBottom: 10}}>
+                            {
+                                 profiles[length-1].top_songs.length > 0 ?  profiles[length-1].top_songs.map(
+                                    song => 
+                                    <View key={song.name} style={styles.artists}>
+                                        <Image style={styles.picture} source={{uri: song.picture}}/>
+                                        <TouchableOpacity onPress={() => openLink(song.spotify)} style={{width: 90, height: 20, backgroundColor: colors.primary, borderRadius: 15, marginTop: 5}}>
+                                            <Text style={{alignSelf: 'center', color: 'white'}}>
+                                                {song.name}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : 
+                                <View style={styles.artists}>
+                                    <Text>No top songs . . .</Text>
+                                </View>                                                
+                            }
+                        </View>
+                        </>
+                        :
+                        <>
+                        </>
+                    }
+                    {
+                        modalState === 1
+                        ?
+                        <View style={{flex: 1, display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    if(modalText === "Delete Account?") {
+                                        setModalText("Are you sure you want to delete?");
+                                    } else {
+                                        deleteAccount();
+                                    }
+                                }}
+                                style={styles.modalButton}
+                            >
+                                <Text style={{color: 'white'}}>YES</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setVisible(!visible)}
+                                style={{...styles.modalButton, backgroundColor: colors.primary, marginLeft: 5}}
+                            >
+                                <Text style={{color: 'white'}}>NO</Text>
+                            </TouchableOpacity>
+                        </View>
+                        :
+                        <TouchableOpacity
+                            onPress={() => setVisible(!visible)}
+                            style={styles.modalButton}
+                        >
+                            <Text style={{color: 'white'}}>OK</Text>
+                        </TouchableOpacity>
+                    }
                 </View>
             </Modal>
             <View style={styles.cardContainer}>
@@ -217,70 +320,81 @@ const Home = () => {
                     </View>
                     :
                     (
-                        length > 0 ?
-                        profiles.map(profile => 
-                            <TinderCard key={profile.email} onSwipe={(dir) => swiped(dir, profile)} preventSwipe={['down', 'up']}>
-                                <View style={styles.card}>
-                                    <Image style={{width: 100, height: 30}} source={spotify}></Image>
-                                    <View style={styles.cardContents}>
-                                        {
-                                            profile.picture === "" ?
-                                            <View style={styles.noProfilePic} >
-                                                <Ionicons name="person" size={75} color="white" />
-                                            </View>
-                                            :
-                                            <Image style={styles.noProfilePic} source={{uri: profile.picture}}/>
-                                        }
-                                        <Text style={{fontSize: 25, fontWeight: 'bold'}}>
-                                            {profile.email}
-                                        </Text>
-                                        <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
-                                            TOP ARTISTS
-                                        </Text>
-                                        <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
-                                            {
-                                                profile.top_artists.length > 0 ? profile.top_artists.map(
-                                                    artist => 
-                                                    <View style={styles.artists}>
-                                                        <Image style={styles.picture} source={{uri: artist.picture}}/>
-                                                        <Text>{artist.name}</Text>
+                        length > 0 
+                        ?
+                            <>
+                            <TouchableOpacity onPress={displayLinks} style={{width: 120, height: 35, backgroundColor: 'white', left: 15, borderTopLeftRadius: 20, borderTopRightRadius: 20}}>
+                                <Image style={{width: 100, height: 30, alignSelf: 'center'}} source={spotify}></Image>
+                            </TouchableOpacity>
+                            {
+                                profiles.map(profile => 
+                                    <TinderCard key={profile.email} onSwipe={(dir) => swiped(dir, profile)} preventSwipe={['down', 'up']}>
+                                        <View style={styles.card}>
+                                            <View style={styles.cardContents}>
+                                                {
+                                                    profile.picture === "" ?
+                                                    <View style={styles.noProfilePic} >
+                                                        <Ionicons name="person" size={75} color="white" />
                                                     </View>
-                                                ) : 
-                                                <View style={styles.artists}>
-                                                    <Text>No top artists . . .</Text>
+                                                    :
+                                                    <Image style={styles.noProfilePic} source={{uri: profile.picture}}/>
+                                                }
+                                                <Text style={{fontSize: 25, fontWeight: 'bold'}}>
+                                                    {profile.email}
+                                                </Text>
+                                                <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
+                                                    TOP ARTISTS
+                                                </Text>
+                                                <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                                                    {
+                                                        profile.top_artists.length > 0 ? profile.top_artists.map(
+                                                            artist => 
+                                                            <View key={artist.name} style={styles.artists}>
+                                                                <Image style={styles.picture} source={{uri: artist.picture}}/>
+                                                                <Text style={{alignSelf: 'center'}}>
+                                                                    {artist.name}
+                                                                </Text>
+                                                            </View>
+                                                        ) : 
+                                                        <View style={styles.artists}>
+                                                            <Text>No top artists . . .</Text>
+                                                        </View>
+                                                    }
                                                 </View>
-                                            }
+                                                <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
+                                                    TOP SONGS
+                                                </Text>
+                                                <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
+                                                    {
+                                                        profile.top_songs.length > 0 ? profile.top_songs.map(
+                                                            song => 
+                                                            <View key={song.name} style={styles.artists}>
+                                                                <Image style={styles.picture} source={{uri: song.picture}}/>
+                                                                <Text style={{alignSelf: 'center'}}>
+                                                                    {song.name}
+                                                                </Text>
+                                                            </View>
+                                                        ) : 
+                                                        <View style={styles.artists}>
+                                                            <Text>No top songs . . .</Text>
+                                                        </View>                                                
+                                                    }
+                                                </View>
+                                            </View>
                                         </View>
-                                        <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
-                                            TOP SONGS
-                                        </Text>
-                                        <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
-                                            {
-                                                profile.top_songs.length > 0 ? profile.top_songs.map(
-                                                    song => 
-                                                    <View style={styles.artists}>
-                                                        <Image style={styles.picture} source={{uri: song.picture}}/>
-                                                        <Text>{song.name}</Text>
-                                                    </View>
-                                                ) : 
-                                                <View style={styles.artists}>
-                                                    <Text>No top songs . . .</Text>
-                                                </View>                                                
-                                            }
-                                        </View>
-                                    </View>
-                                </View>
-                            </TinderCard>
-                        )
+                                    </TinderCard>
+                                )
+                            }
+                            </>
                         :
                         <>
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                                <Pressable
+                                <TouchableOpacity
                                     onPress={getProfiles}
                                     style={styles.getProfiles}
                                 >
                                     <Text style={{color: 'white', textAlign: 'center'}}>Get More Profiles</Text>
-                                </Pressable>
+                                </TouchableOpacity>
                             </View>
                         </>
                     )
@@ -363,7 +477,9 @@ const styles = StyleSheet.create({
     },
     modalText: {
         marginBottom: 15,
-        textAlign: "center"
+        textAlign: "center",
+        fontWeight: 'bold',
+        fontSize: 30
     },
     rightIcons: {
         display: 'flex',

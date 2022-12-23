@@ -11,6 +11,9 @@ import {
   updateDoc,
   addDoc,
   doc,
+  query,
+  where,
+  getDocs
 } from 'firebase/firestore';
 
 const discovery = {
@@ -64,7 +67,7 @@ export default function Login({ navigation }) {
         .then((cred) => {
           const { uid } = cred.user;
           
-          updateProfile(uid);
+          updateProfile(uid, profile.data, topArtists.data.items, topSongs.data.items);
 
           console.log("Login success");
         })
@@ -86,8 +89,6 @@ export default function Login({ navigation }) {
     if (response?.type === 'success') {
       const { access_token } = response.params;
 
-      console.log(access_token);
-
       getSpotifyProfileData(access_token);
 
       setSpotifyCode(access_token);
@@ -98,26 +99,28 @@ export default function Login({ navigation }) {
     promptAsync();
   };
 
-const updateProfile = async (uid) => {
-  console.log(uid);
+const updateProfile = async (uid, profile, topArtists, topSongs) => {
   const userQuery = query(collection(database, 'users'), where('_id', '==', uid));
   const userQuerySnapshot = await getDocs(userQuery);
   const profileRef = doc(database, 'users', userQuerySnapshot.docs[0].id);
 
   updateDoc(profileRef, {
-    picture: profile.images[0].url === undefined ? "" : profile.images[0].url,
+    picture: profile.images.length === 0 ? "" : profile.images[0].url,
     top_artists: topArtists.map((artist) => {
       return {
         name: artist.name,
-        picture: artist.images[0].url
+        picture: artist.images[0].url,
+        spotify: artist.external_urls.spotify
       }
     }),
     top_songs: topSongs.map((song) => {
       return {
         name: song.name,
-        picture: song.images[0].url
+        picture: song.album.images[0].url,
+        spotify: song.uri
       }
     }),
+    display_name: profile.display_name
   });
 }
 
@@ -139,15 +142,18 @@ const onHandleSignup = (email, password, profile, topArtists, topSongs) => {
               top_artists: topArtists.map((artist) => {
                 return {
                   name: artist.name,
-                  picture: artist.images[0].url
+                  picture: artist.images[0].url,
+                  spotify: artist.external_urls.spotify
                 }
               }),
               top_songs: topSongs.map((song) => {
                 return {
                   name: song.name,
-                  picture: song.album.images[0].url
+                  picture: song.album.images[0].url,
+                  spotify: song.uri
                 }
               }),
+              display_name: profile.display_name
             });
 
             console.log('Signup success')

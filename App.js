@@ -65,7 +65,6 @@ function RootNavigator() {
           const userQuery = query(collectionRef, where('email', '==', authenticatedUser.email));
           const userQuerySnapshot = await getDocs(userQuery);
           setAuthUser(authenticatedUser);
-          console.log(userQuerySnapshot.docs[0].data());
           setUser({id: userQuerySnapshot.docs[0].id, ...userQuerySnapshot.docs[0].data()});
         } else {
           setUser(null);
