@@ -53,7 +53,7 @@ export default function Notifications() {
                                 ? 
                                 <></> 
                                 : 
-                                <View style={{height: 15, width: 15, borderRadius: 50, backgroundColor: colors.primary, marginRight: 20}}></View>
+                                <View style={styles.notificationIcon}></View>
                             }
                         </View>
                     )
@@ -81,5 +81,12 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         padding: 10,
+    },
+    notificationIcon: {
+        height: 15, 
+        width: 15, 
+        borderRadius: 50, 
+        backgroundColor: colors.primary, 
+        marginRight: 20
     }
 });

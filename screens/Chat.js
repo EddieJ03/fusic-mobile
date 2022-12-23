@@ -17,7 +17,6 @@ import {
   getDoc
 } from 'firebase/firestore';
 import { auth, database } from '../config/firebase';
-import { useNavigation } from '@react-navigation/native';
 import { AuthenticatedUserContext } from '../Context'
 
 
@@ -26,7 +25,7 @@ export default function Chat({ route }) {
     const { other } = route.params;
 
     const [messages, setMessages] = useState([]);
-    const navigation = useNavigation();
+    
 
     useLayoutEffect(() => {
         const collectionRef = collection(database, 'chats');
@@ -53,7 +52,6 @@ export default function Chat({ route }) {
           GiftedChat.append(previousMessages, messages)
         );
 
-        // setMessages([...messages, ...messages]);
         const { _id, createdAt, text } = messages[0];    
         addDoc(collection(database, 'chats'), {
           _id,

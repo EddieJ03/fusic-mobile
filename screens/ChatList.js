@@ -15,7 +15,6 @@ import { AuthenticatedUserContext } from '../Context';
 import colors from '../colors';
 import { Ionicons } from '@expo/vector-icons';
 
-
 export default function ChatList() {
     const { user, setUser } = useContext(AuthenticatedUserContext);
 
@@ -66,9 +65,10 @@ export default function ChatList() {
                             </TouchableOpacity>
                             {
                                 item.lastToSend === "" || item.lastToSend === user.email 
-                                ? <></> 
+                                ? 
+                                <></> 
                                 : 
-                                <View style={{height: 15, width: 15, borderRadius: 50, backgroundColor: colors.primary, marginRight: 20}}></View>
+                                <View style={styles.newMessageNotification}></View>
                             }
                         </View>
                     )
@@ -105,5 +105,12 @@ const styles = StyleSheet.create({
         justifyContent: 'center', 
         alignItems: 'center', 
         borderRadius: 50,
+    },
+    newMessageNotification: {
+        height: 15, 
+        width: 15, 
+        borderRadius: 50, 
+        backgroundColor: colors.primary, 
+        marginRight: 20
     }
 });

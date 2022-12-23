@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState, useContext, useCallback } from "react";
+import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
 import { View, TouchableOpacity, Text, StyleSheet, Image, Modal, Pressable, ActivityIndicator } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import colors from '../colors';
@@ -60,6 +60,35 @@ const Home = () => {
         return () => unsubscribe();
     }, []);
 
+    useLayoutEffect(() => {
+        navigation.setOptions({
+          headerLeft: () => (
+            <TouchableOpacity
+              style={{
+                marginLeft: 10
+              }}
+              onPress={onSignOut}
+            >
+              <AntDesign name="leftcircle" size={24} color={'crimson'} />
+            </TouchableOpacity>
+          ),
+          headerRight: () => (
+            <View style={styles.rightIcons}>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("Notifications")}
+                >
+                    <Entypo name="bell" size={24} color={user.notifications_length > 0 ? colors.primary : colors.gray} style={{marginRight: 10}}/>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("ChatList")}
+                >
+                    <Entypo name="chat" size={24} color={user.matches.find(element => element.lastToSend !== "" && element.lastToSend !== user.email) !== undefined ? colors.primary : colors.gray} style={{marginRight: 10}}/>
+                </TouchableOpacity>
+            </View>
+          )
+        });
+    }, [navigation, user]);
+
     const swiped = async (direction, profile) => {
       setLength(length - 1);
 
@@ -105,35 +134,6 @@ const Home = () => {
         signOut(auth).catch(error => console.log('Error logging out: ', error));
     };
 
-    useLayoutEffect(() => {
-        navigation.setOptions({
-          headerLeft: () => (
-            <TouchableOpacity
-              style={{
-                marginLeft: 10
-              }}
-              onPress={onSignOut}
-            >
-              <AntDesign name="leftcircle" size={24} color={'crimson'} />
-            </TouchableOpacity>
-          ),
-          headerRight: () => (
-            <View style={styles.rightIcons}>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate("Notifications")}
-                >
-                    <Entypo name="bell" size={24} color={user.notifications_length > 0 ? colors.primary : colors.gray} style={{marginRight: 10}}/>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate("ChatList")}
-                >
-                    <Entypo name="chat" size={24} color={user.matches.find(element => element.lastToSend !== "" && element.lastToSend !== user.email) !== undefined ? colors.primary : colors.gray} style={{marginRight: 10}}/>
-                </TouchableOpacity>
-            </View>
-          )
-        });
-    }, [navigation, user]);
-
     const getProfiles = async () => {
         console.log("running get profiles");
         setLoading(true);
@@ -178,7 +178,6 @@ const Home = () => {
     const updateNotifications = async () => {
         console.log(prevScreen + " in home");
 
-        // first get rid of notifications if came from notifications
         if(prevScreen === "Notifications" && user.notifications_length > 0) {
             const dataToUpdate = doc(database, 'users', user.id);
             await updateDoc(dataToUpdate, {
@@ -203,7 +202,7 @@ const Home = () => {
                     <Text style={styles.modalText}>{modalText}</Text>
                     <Pressable
                         onPress={() => setVisible(!visible)}
-                        style={{backgroundColor: colors.gray, height: 30, width: 60, display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: 10}}
+                        style={styles.modalButton}
                     >
                         <Text style={{color: 'white'}}>OK</Text>
                     </Pressable>
@@ -278,7 +277,7 @@ const Home = () => {
                             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                                 <Pressable
                                     onPress={getProfiles}
-                                    style={{backgroundColor: '#606060', height: 50, width: 100, display: 'flex', justifyContent: 'center', alignItems: 'center', borderRadius: 15}}
+                                    style={styles.getProfiles}
                                 >
                                     <Text style={{color: 'white', textAlign: 'center'}}>Get More Profiles</Text>
                                 </Pressable>
@@ -405,5 +404,23 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         position: 'absolute',
         top: -40
+    },
+    modalButton: {
+        backgroundColor: colors.gray, 
+        height: 30, 
+        width: 60, 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        borderRadius: 10
+    },
+    getProfiles:{
+        backgroundColor: colors.primary, 
+        height: 50, 
+        width: 100, 
+        display: 'flex', 
+        justifyContent: 'center',
+         alignItems: 'center', 
+         borderRadius: 15
     }
 });

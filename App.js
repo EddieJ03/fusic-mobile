@@ -6,7 +6,6 @@ import { View, ActivityIndicator } from 'react-native';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth, database } from './config/firebase';
 import Login from './screens/Login';
-import Signup from './screens/Signup';
 import ChatList from './screens/ChatList';
 import Chat from './screens/Chat';
 import Home from './screens/Home';
@@ -48,7 +47,6 @@ function AuthStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }} defaultScreenOptions={Login}>
       <Stack.Screen name='Login' component={Login} />
-      <Stack.Screen name='Signup' component={Signup} />
     </Stack.Navigator>
   );
 }
