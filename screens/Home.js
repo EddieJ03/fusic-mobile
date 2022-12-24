@@ -18,6 +18,7 @@ import {
     doc,
     updateDoc,
     getDoc,
+    deleteDoc 
 } from 'firebase/firestore';
 const spotify = require("../assets/Spotify_Logo_RGB_Green.png");
 
@@ -108,7 +109,7 @@ const Home = () => {
         const profileRef = doc(database, 'users', profile.id);
         const profileSnap = await getDoc(profileRef);
 
-        if(!profileSnap.exists) {
+        if(!profileSnap.exists()) {
             return;
         }
 
@@ -202,7 +203,39 @@ const Home = () => {
     }
 
     const deleteAccount = async () => {
+        setLoading(true);
 
+        // remove messages
+        const collectionRef = collection(database, 'chats');
+        
+        for(let i = 0; i < user.matches.length; i++) {
+            let other = user.matches[i];
+            const messageQuery = query(collectionRef, where('userFromAndTo', 'in', [user.email+","+other.email, other.email+","+user.email]));
+
+            const messageQueryData = await getDocs(messageQuery);
+
+            // delete each message
+            const messages = messageQueryData.docs;
+
+            for(let i = 0; i < messages.length; i++) {
+                await deleteDoc(doc(database, 'chats', messages[i].id));
+            }
+
+            const matchRef = doc(database, 'users', user.matches[i].id);
+
+            const profileSnap = await getDoc(profileRef);
+
+            const otherMatches = profileSnap.data().matches;
+
+            await updateDoc(matchRef, {
+                matches: otherMatches.filter(u => u.email !== user.email)
+            });
+        }
+
+        // delete the user
+        await deleteDoc(doc(database, 'users', user.id));
+
+        onSignOut();
     }
 
     const displayLinks = () => {
@@ -340,7 +373,7 @@ const Home = () => {
                                                     <Image style={styles.noProfilePic} source={{uri: profile.picture}}/>
                                                 }
                                                 <Text style={{fontSize: 25, fontWeight: 'bold'}}>
-                                                    {profile.email}
+                                                    {profile.display_name}
                                                 </Text>
                                                 <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
                                                     TOP ARTISTS

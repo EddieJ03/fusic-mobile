@@ -60,7 +60,7 @@ export default function ChatList() {
                                     />
                                 }
                                 <Text style={styles.name}>
-                                    {item.email} 
+                                    {item.display_name} 
                                 </Text>
                             </TouchableOpacity>
                             {
