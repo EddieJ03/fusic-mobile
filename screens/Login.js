@@ -117,7 +117,7 @@ const updateProfile = async (uid, profile, topArtists, topSongs) => {
       return {
         name: song.name,
         picture: song.album.images[0].url,
-        spotify: song.uri
+        spotify: song.external_urls.spotify
       }
     }),
     display_name: profile.display_name

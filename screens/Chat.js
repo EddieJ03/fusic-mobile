@@ -65,8 +65,8 @@ export default function Chat({ route }) {
         const userToUpdate = doc(database, 'users', user.id);
         const otherToUpdate = doc(database, 'users', other.id);
 
-        const otherMatches = (await getDoc(otherToUpdate)).data().matches;
-        const userMatches = user.matches;
+        let otherMatches = (await getDoc(otherToUpdate)).data().matches;
+        let userMatches = user.matches;
 
         const userIdx = userMatches.findIndex(x => x.email === other.email);
         const otherIdx = otherMatches.findIndex(x => x.email === user.email);
@@ -74,8 +74,8 @@ export default function Chat({ route }) {
         userMatches[userIdx].lastToSend = user.email;
         otherMatches[otherIdx].lastToSend = user.email;
 
-        userMatches = [userMatches[userIdx], userMatches.slice(0, userIdx), userMatches.slice(userIdx+1)];
-        otherMatches = [otherMatches[otherIdx], otherMatches.slice(0, otherIdx), otherMatches.slice(otherIdx+1)];
+        userMatches = [userMatches[userIdx], ...userMatches.slice(0, userIdx), ...userMatches.slice(userIdx+1)];
+        otherMatches = [otherMatches[otherIdx], ...otherMatches.slice(0, otherIdx), ...otherMatches.slice(otherIdx+1)];
 
         await updateDoc(userToUpdate, {
             matches: userMatches

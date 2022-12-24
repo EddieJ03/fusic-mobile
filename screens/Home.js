@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text, StyleSheet, Image, Modal, ActivityIndicat
 import { useNavigation, useIsFocused } from "@react-navigation/native";
 import colors from '../colors';
 import { Entypo, AntDesign, Ionicons } from '@expo/vector-icons';
-import { signOut } from 'firebase/auth';
+import { signOut, deleteUser } from 'firebase/auth';
 import { auth, database } from '../config/firebase';
 import TinderCard from 'react-tinder-card';
 import { AuthenticatedUserContext } from '../Context';  
@@ -44,24 +44,26 @@ const Home = () => {
     }, [isFocused])
 
     useLayoutEffect(() => {
-        getProfiles();
+        if(user) {
+            getProfiles();
+            console.log("entered home");
 
-        console.log("entered home");
+            const collectionRef = collection(database, 'users');
+            const q = query(collectionRef, where('email', '==', user.email));
 
-        const collectionRef = collection(database, 'users');
-        const q = query(collectionRef, where('email', '==', user.email));
-
-        const unsubscribe = onSnapshot(q, querySnapshot => {
-            console.log('usersnapshot unsusbscribe');
-            setUser(
-                {
-                    id: user.id,
-                    ...querySnapshot.docs[0].data()
-                }
-            );
-        });
-        
-        return () => unsubscribe();
+            const unsubscribe = onSnapshot(q, querySnapshot => {
+                console.log('usersnapshot unsusbscribe');
+                const userInfo = querySnapshot.docs[0].data();
+                setUser(
+                    {
+                        id: user.id,
+                        ...userInfo
+                    }
+                );
+            });
+            
+            return () => unsubscribe();
+        }
     }, []);
 
     useLayoutEffect(() => {
@@ -122,12 +124,12 @@ const Home = () => {
             const otherToUpdate = doc(database, 'users', profile.id);
 
             await updateDoc(userToUpdate, {
-                matches: [{email: profile.email, lastToSend: "", id: profile.id, picture: profile.picture}, ...user.matches]
+                matches: [{email: profile.email, lastToSend: "", id: profile.id, picture: profile.picture, display_name: profile.display_name}, ...user.matches]
             })
 
             // filter out swiped_right in other user
             await updateDoc(otherToUpdate, {
-                 matches: [{email: user.email, lastToSend: "", id: user.id, picture: user.picture}, ...profileSnap.data().matches],
+                 matches: [{email: user.email, lastToSend: "", id: user.id, picture: user.picture, display_name: user.display_name}, ...profileSnap.data().matches],
                  swiped_right: profile.swiped_right.filter(email => email !== user.email),
                  notifications: [`New Friend: ${user.email}!`, ...profile.notifications],
                  notifications_length: profile.notifications_length + 1
@@ -169,7 +171,7 @@ const Home = () => {
         }
 
         const filteredProfiles = profilesQuerySnapshot.docs.filter((profile) => !alreadySwiped.has(profile.data().email)).map((profile) => {
-            const { email, swiped_right, notifications, notifications_length, picture, top_artists, top_songs } = profile.data();
+            const { email, swiped_right, notifications, notifications_length, picture, top_artists, top_songs, display_name } = profile.data();
 
             return {
                 id: profile.id,
@@ -179,13 +181,13 @@ const Home = () => {
                 notifications_length,
                 picture,
                 top_artists,
-                top_songs
+                top_songs,
+                display_name
             };
         });
 
         setProfiles(filteredProfiles);
         setLength(filteredProfiles.length);
-
         setLoading(false);
     }
 
@@ -204,6 +206,7 @@ const Home = () => {
 
     const deleteAccount = async () => {
         setLoading(true);
+        setVisible(false);
 
         // remove messages
         const collectionRef = collection(database, 'chats');
@@ -223,7 +226,7 @@ const Home = () => {
 
             const matchRef = doc(database, 'users', user.matches[i].id);
 
-            const profileSnap = await getDoc(profileRef);
+            const profileSnap = await getDoc(matchRef);
 
             const otherMatches = profileSnap.data().matches;
 
@@ -232,8 +235,14 @@ const Home = () => {
             });
         }
 
+        const { id } = user;
+
+        setUser(null);
+
         // delete the user
-        await deleteDoc(doc(database, 'users', user.id));
+        await deleteDoc(doc(database, 'users', id));
+
+        await deleteUser(auth.currentUser);
 
         onSignOut();
     }
