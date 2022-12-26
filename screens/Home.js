@@ -324,7 +324,7 @@ const Home = () => {
                         ?
                             <>
                             <TouchableOpacity onPress={displayLinks} style={styles.linksButton}>
-                                <Image style={{width: 100, height: 30, alignSelf: 'center'}} source={spotify} />
+                                <Image style={{width: 100, height: 30}} source={spotify} />
                             </TouchableOpacity>
                             {
                                 profiles.map(profile => 
@@ -361,13 +361,15 @@ const styles = StyleSheet.create({
         backgroundColor: 'white', 
         left: 15, 
         borderTopLeftRadius: 20, 
-        borderTopRightRadius: 20
+        borderTopRightRadius: 20,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     container: {
-        display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: '100%',
+        flex: 1,
         height: '100%'
     },
     signOutButton: {
@@ -406,7 +408,7 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.25,
         shadowRadius: 4,
-        elevation: 5
+        elevation: 5,
     },
     modalText: {
         marginBottom: 15,

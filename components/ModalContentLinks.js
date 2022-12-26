@@ -17,10 +17,10 @@ function ModalContentLinks({ profiles, length }) {
                 {
                     profiles[length-1].top_artists.length > 0 ? profiles[length-1].top_artists.map(
                         artist => 
-                        <View key={artist.name} style={styles.artists}>
+                        <View key={artist.name} style={styles.items}>
                             <Image style={styles.picture} source={{uri: artist.picture}}/>
                             <TouchableOpacity onPress={() => openLink(artist.spotify)} style={styles.link}>
-                                <Text style={{alignSelf: 'center', color: 'white'}}>
+                                <Text style={{color: 'white'}}>
                                     {artist.name}
                                 </Text>
                             </TouchableOpacity>
@@ -35,14 +35,14 @@ function ModalContentLinks({ profiles, length }) {
             <Text style={styles.title}>
                 TOP SONGS
             </Text>
-            <View style={{display: 'flex', flexDirection: 'row', width: '100%', marginBottom: 10}}>
+            <View style={{display: 'flex', flexDirection: 'row', marginBottom: 10}}>
                 {
                     profiles[length-1].top_songs.length > 0 ?  profiles[length-1].top_songs.map(
                         song => 
-                        <View key={song.name} style={styles.artists}>
+                        <View key={song.name} style={styles.items}>
                             <Image style={styles.picture} source={{uri: song.picture}}/>
                             <TouchableOpacity onPress={() => openLink(song.spotify)} style={styles.link}>
-                                <Text style={{alignSelf: 'center', color: 'white'}}>
+                                <Text style={{color: 'white'}}>
                                     {song.name}
                                 </Text>
                             </TouchableOpacity>
@@ -68,11 +68,12 @@ const styles = StyleSheet.create({
     },
     link: {
         width: 90, 
-        height: 20, 
-        backgroundColor: 
-        colors.primary, 
-        borderRadius: 15, 
-        marginTop: 5
+        height: 25, 
+        backgroundColor: colors.primary, 
+        borderRadius: 5, 
+        marginTop: 5,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     empty: {
         display: 'flex', 
@@ -87,4 +88,7 @@ const styles = StyleSheet.create({
         objectFit: 'cover',
         borderRadius: 50
     },
+    items: {
+        margin: 5
+    }
 });
