@@ -2,6 +2,7 @@ import 'dotenv/config';
 
 export default {
   "expo": {
+    "scheme": "fusic-mobile",
     "name": "fusic-mobile",
     "slug": "fusic-mobile",
     "version": "1.0.0",

@@ -1,17 +1,17 @@
+import { View, FlatList, Text, StyleSheet, } from 'react-native';
+import { AuthenticatedUserContext } from '../Context';
+import { database } from '../config/firebase';
+import colors from '../colors';
 import React, {
     useLayoutEffect,
     useContext,
 } from 'react';
-import { View, FlatList, Text, StyleSheet, } from 'react-native';
 import {
     collection,
     query,
     onSnapshot,
     where 
 } from 'firebase/firestore';
-import { database } from '../config/firebase';
-import { AuthenticatedUserContext } from '../Context';
-import colors from '../colors';
 
 
 export default function Notifications() {
@@ -42,7 +42,7 @@ export default function Notifications() {
                 data={user.notifications}
                 renderItem={
                     ({item, index}) => (
-                        <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+                        <View style={styles.notification}>
                             <View style={styles.item}>
                                 <Text style={styles.name}>
                                     {item} 
@@ -88,5 +88,10 @@ const styles = StyleSheet.create({
         borderRadius: 50, 
         backgroundColor: colors.primary, 
         marginRight: 20
+    },
+    notification: {
+        flex: 1, 
+        flexDirection: 'row', 
+        alignItems: 'center'
     }
 });

@@ -1,19 +1,19 @@
+import { View, FlatList, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { AuthenticatedUserContext } from '../Context';
+import { Ionicons } from '@expo/vector-icons';
+import { database } from '../config/firebase';
+import colors from '../colors';
 import React, {
     useLayoutEffect,
     useContext
 } from 'react';
-import { View, FlatList, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import {
     collection,
     query,
     onSnapshot,
     where 
 } from 'firebase/firestore';
-import { database } from '../config/firebase';
-import { useNavigation } from '@react-navigation/native';
-import { AuthenticatedUserContext } from '../Context';
-import colors from '../colors';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function ChatList() {
     const { user, setUser } = useContext(AuthenticatedUserContext);
@@ -43,8 +43,10 @@ export default function ChatList() {
                 data={user.matches}
                 renderItem={
                     ({item}) => (
-                        <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
-                            <TouchableOpacity onPress={() => navigation.navigate("Chat", {other: item})} style={styles.item}>
+                        <View style={styles.match}>
+                            <TouchableOpacity 
+                                onPress={() => navigation.navigate("Chat", {other: item})} 
+                                style={styles.item}>
                                 {
                                     item.picture === "" 
                                     ?
@@ -112,5 +114,10 @@ const styles = StyleSheet.create({
         borderRadius: 50, 
         backgroundColor: colors.primary, 
         marginRight: 20
+    },
+    match: {
+        flex: 1, 
+        flexDirection: 'row', 
+        alignItems: 'center'
     }
 });

@@ -1,10 +1,12 @@
+import { GiftedChat } from 'react-native-gifted-chat';
+import { AuthenticatedUserContext } from '../Context';
+import { database } from '../config/firebase';
 import React, {
     useState,
     useLayoutEffect,
     useCallback,
     useContext
 } from 'react';
-import { GiftedChat } from 'react-native-gifted-chat';
 import {
   collection,
   addDoc,
@@ -16,8 +18,6 @@ import {
   updateDoc,
   getDoc
 } from 'firebase/firestore';
-import { auth, database } from '../config/firebase';
-import { AuthenticatedUserContext } from '../Context'
 
 
 export default function Chat({ route }) {
@@ -100,7 +100,7 @@ export default function Chat({ route }) {
             borderRadius: 20,
           }}
           user={{
-            _id: auth?.currentUser?.email,
+            _id: user.email,
             avatar: user.picture === "" ? 'https://i.stack.imgur.com/34AD2.jpg' : user.picture
           }}
         />

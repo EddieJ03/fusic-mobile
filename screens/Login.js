@@ -1,10 +1,10 @@
-import React, { useEffect, useContext } from "react";
 import { StyleSheet, Text, View, Image, SafeAreaView, TouchableOpacity, StatusBar, Alert } from "react-native";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth, database } from "../config/firebase";
-const backImage = require("../assets/backgroundImage.png");
 import { makeRedirectUri, useAuthRequest, ResponseType } from 'expo-auth-session';
+const backImage = require("../assets/backgroundImage.png");
 import { AuthenticatedUserContext } from '../Context'; 
+import React, { useEffect, useContext } from "react";
+import { auth, database } from "../config/firebase";
 import axios from 'axios'; 
 import {
   collection,
@@ -169,7 +169,9 @@ const onHandleSignup = (email, password, profile, topArtists, topSongs) => {
       <SafeAreaView style={styles.form}>
         <Text style={styles.title}>FUSIC</Text>
         <TouchableOpacity style={styles.button} onPress={onHandleLogin}>
-            <Text style={{fontWeight: 'bold', color: '#fff', fontSize: 18}}>Log In With Spotify</Text>
+            <Text style={styles.loginText}>
+              Log In With Spotify
+            </Text>
         </TouchableOpacity>
       </SafeAreaView>
       <StatusBar barStyle="light-content" />
@@ -224,4 +226,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 40,
   },
+  loginText :{
+    fontWeight: 'bold', 
+    color: '#fff', 
+    fontSize: 18
+  }
 });

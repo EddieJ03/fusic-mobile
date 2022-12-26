@@ -1,12 +1,14 @@
+import { View, TouchableOpacity, Text, StyleSheet, Image, Modal, ActivityIndicator } from "react-native";
 import React, { useEffect, useLayoutEffect, useState, useContext } from "react";
-import { View, TouchableOpacity, Text, StyleSheet, Image, Modal, ActivityIndicator, Linking } from "react-native";
 import { useNavigation, useIsFocused } from "@react-navigation/native";
-import colors from '../colors';
-import { Entypo, AntDesign, Ionicons } from '@expo/vector-icons';
+import ModalContentLinks from "../components/ModalContentLinks";
+import TinderCardContent from "../components/TinderCardContent";
+import { Entypo, AntDesign } from '@expo/vector-icons';
+import { AuthenticatedUserContext } from '../Context';  
 import { signOut, deleteUser } from 'firebase/auth';
 import { auth, database } from '../config/firebase';
 import TinderCard from 'react-tinder-card';
-import { AuthenticatedUserContext } from '../Context';  
+import colors from '../colors';
 import {
     collection,
     orderBy,
@@ -20,6 +22,7 @@ import {
     getDoc,
     deleteDoc 
 } from 'firebase/firestore';
+
 const spotify = require("../assets/Spotify_Logo_RGB_Green.png");
 
 const Home = () => {
@@ -144,7 +147,7 @@ const Home = () => {
             })
         }
       }
-    }
+    };
   
     const onSignOut = () => {
         signOut(auth).catch(error => console.log('Error logging out: ', error));
@@ -189,7 +192,7 @@ const Home = () => {
         setProfiles(filteredProfiles);
         setLength(filteredProfiles.length);
         setLoading(false);
-    }
+    };
 
     const updateNotifications = async () => {
         console.log(prevScreen + " in home");
@@ -202,7 +205,7 @@ const Home = () => {
         }
         
         setPrevScreen("Home");
-    }
+    };
 
     const deleteAccount = async () => {
         setLoading(true);
@@ -245,17 +248,13 @@ const Home = () => {
         await deleteUser(auth.currentUser);
 
         onSignOut();
-    }
+    };
 
     const displayLinks = () => {
         setVisible(true);
         setModalState(2);
         setModalText("Links");
-    }
-
-    const openLink = async (url) => {
-        await Linking.openURL(url);
-    }
+    };
 
     return (
         <View style={styles.container}>
@@ -273,48 +272,7 @@ const Home = () => {
                         modalState === 2 
                         ?
                         <>
-                        <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
-                            TOP ARTISTS
-                        </Text>
-                        <View style={{display: 'flex', flexDirection: 'row'}}>
-                            {
-                                profiles[length-1].top_artists.length > 0 ? profiles[length-1].top_artists.map(
-                                    artist => 
-                                    <View key={artist.name} style={styles.artists}>
-                                        <Image style={styles.picture} source={{uri: artist.picture}}/>
-                                        <TouchableOpacity onPress={() => openLink(artist.spotify)} style={{width: 90, height: 20, backgroundColor: colors.primary, borderRadius: 15, marginTop: 5}}>
-                                            <Text style={{alignSelf: 'center', color: 'white'}}>
-                                                {artist.name}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                ) : 
-                                <View style={styles.artists}>
-                                    <Text>No top artists . . .</Text>
-                                </View>
-                            }
-                        </View>
-                        <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
-                            TOP SONGS
-                        </Text>
-                        <View style={{display: 'flex', flexDirection: 'row', width: '100%', marginBottom: 10}}>
-                            {
-                                 profiles[length-1].top_songs.length > 0 ?  profiles[length-1].top_songs.map(
-                                    song => 
-                                    <View key={song.name} style={styles.artists}>
-                                        <Image style={styles.picture} source={{uri: song.picture}}/>
-                                        <TouchableOpacity onPress={() => openLink(song.spotify)} style={{width: 90, height: 20, backgroundColor: colors.primary, borderRadius: 15, marginTop: 5}}>
-                                            <Text style={{alignSelf: 'center', color: 'white'}}>
-                                                {song.name}
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                ) : 
-                                <View style={styles.artists}>
-                                    <Text>No top songs . . .</Text>
-                                </View>                                                
-                            }
-                        </View>
+                            <ModalContentLinks profiles={profiles} length={length} />
                         </>
                         :
                         <>
@@ -365,65 +323,13 @@ const Home = () => {
                         length > 0 
                         ?
                             <>
-                            <TouchableOpacity onPress={displayLinks} style={{width: 120, height: 35, backgroundColor: 'white', left: 15, borderTopLeftRadius: 20, borderTopRightRadius: 20}}>
-                                <Image style={{width: 100, height: 30, alignSelf: 'center'}} source={spotify}></Image>
+                            <TouchableOpacity onPress={displayLinks} style={styles.linksButton}>
+                                <Image style={{width: 100, height: 30, alignSelf: 'center'}} source={spotify} />
                             </TouchableOpacity>
                             {
                                 profiles.map(profile => 
                                     <TinderCard key={profile.email} onSwipe={(dir) => swiped(dir, profile)} preventSwipe={['down', 'up']}>
-                                        <View style={styles.card}>
-                                            <View style={styles.cardContents}>
-                                                {
-                                                    profile.picture === "" ?
-                                                    <View style={styles.noProfilePic} >
-                                                        <Ionicons name="person" size={75} color="white" />
-                                                    </View>
-                                                    :
-                                                    <Image style={styles.noProfilePic} source={{uri: profile.picture}}/>
-                                                }
-                                                <Text style={{fontSize: 25, fontWeight: 'bold'}}>
-                                                    {profile.display_name}
-                                                </Text>
-                                                <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
-                                                    TOP ARTISTS
-                                                </Text>
-                                                <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
-                                                    {
-                                                        profile.top_artists.length > 0 ? profile.top_artists.map(
-                                                            artist => 
-                                                            <View key={artist.name} style={styles.artists}>
-                                                                <Image style={styles.picture} source={{uri: artist.picture}}/>
-                                                                <Text style={{alignSelf: 'center'}}>
-                                                                    {artist.name}
-                                                                </Text>
-                                                            </View>
-                                                        ) : 
-                                                        <View style={styles.artists}>
-                                                            <Text>No top artists . . .</Text>
-                                                        </View>
-                                                    }
-                                                </View>
-                                                <Text style={{fontWeight: 'bold', marginTop: 20, marginBottom: 10}}>
-                                                    TOP SONGS
-                                                </Text>
-                                                <View style={{display: 'flex', flexDirection: 'row', width: '100%'}}>
-                                                    {
-                                                        profile.top_songs.length > 0 ? profile.top_songs.map(
-                                                            song => 
-                                                            <View key={song.name} style={styles.artists}>
-                                                                <Image style={styles.picture} source={{uri: song.picture}}/>
-                                                                <Text style={{alignSelf: 'center'}}>
-                                                                    {song.name}
-                                                                </Text>
-                                                            </View>
-                                                        ) : 
-                                                        <View style={styles.artists}>
-                                                            <Text>No top songs . . .</Text>
-                                                        </View>                                                
-                                                    }
-                                                </View>
-                                            </View>
-                                        </View>
+                                        <TinderCardContent profile={profile} />
                                     </TinderCard>
                                 )
                             }
@@ -449,6 +355,14 @@ const Home = () => {
 export default Home;
 
 const styles = StyleSheet.create({
+    linksButton: {
+        width: 120, 
+        height: 35, 
+        backgroundColor: 'white', 
+        left: 15, 
+        borderTopLeftRadius: 20, 
+        borderTopRightRadius: 20
+    },
     container: {
         display: 'flex',
         alignItems: 'center',
@@ -479,29 +393,6 @@ const styles = StyleSheet.create({
         maxWidth: 350,
         maxHeight: 600,
     },
-    card: {
-        position: 'absolute',
-        backgroundColor: '#fff',
-        width: '100%',
-        maxWidth: 350,
-        height: 600,
-        shadowColor: 'black',
-        shadowOpacity: 0.2,
-        shadowRadius: 20,
-        borderRadius: 20,
-        resizeMode: 'cover',
-    },
-    cardImage: {
-        width: '100%',
-        height: '95%',
-        overflow: 'hidden',
-        borderRadius: 20,
-    },
-    cardTitle: {
-        position: 'absolute',
-        top: 10,
-        color: 'black',
-    },
     modalView: {
         margin: 20,
         backgroundColor: "white",
@@ -526,31 +417,6 @@ const styles = StyleSheet.create({
     rightIcons: {
         display: 'flex',
         flexDirection: 'row',
-    },
-    cardContents: {
-        backgroundColor: colors.primary, 
-        height: '90%', 
-        position: "absolute", 
-        bottom: 0,
-        width: '100%',
-        borderRadius: 20,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    artists: {
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        flex: 1
-    },
-    picture: {
-        width: 100, 
-        height: 100,
-        objectFit: 'cover',
-        borderRadius: 50
     },
     noProfilePic: {
         backgroundColor: 'black', 
@@ -578,7 +444,7 @@ const styles = StyleSheet.create({
         width: 100, 
         display: 'flex', 
         justifyContent: 'center',
-         alignItems: 'center', 
-         borderRadius: 15
+        alignItems: 'center', 
+        borderRadius: 15
     }
 });
