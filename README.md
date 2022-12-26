@@ -1,6 +1,6 @@
 # Fusic
 
-## A mobile application that allows you to view other people's top artists & songs and chat with them!
+A mobile application that allows you to view other people's top artists & songs and chat with them!
 
 ### Home Screen
 ![Screenshot_20221226_102605_Expo Go](https://user-images.githubusercontent.com/57547638/209575542-985aaa88-7cfa-4ee7-af39-c277556dc0be.jpg)
