@@ -3,7 +3,7 @@
 A mobile application that allows you to view other people's top artists & songs and chat with them!
 
 ### Home Screen
-![Screenshot_20221226_102605_Expo Go](https://user-images.githubusercontent.com/57547638/209583143-5bb80d90-9c5a-41b8-bbd5-794f05239240.jpg)
+The Home Screen features a stack of cards (like Tinder). On each card, you can see some of this person's top artists and songs. You can swipe right if you feel like you share similar musical interests with this individual. Otherwise, swipe left. If both of you swipe right on each other, this person will be added to your friend's list (and you will be added to theirs).
 
 ### List of Friends!
 ![Screenshot_20221226_103015_Expo Go](https://user-images.githubusercontent.com/57547638/209583246-bec0ea24-4519-4930-b760-343c07fd143c.jpg)
